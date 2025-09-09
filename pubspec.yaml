@@ -26,6 +26,9 @@ flutter:
   plugin:
     implements: get_thumbnail_video
     platforms:
+      ohos:
+        package: xyz.justsoft.video_thumbnail
+        pluginClass: VideoThumbnailPlugin
       android:
         package: com.rocksti.get_thumbnail_video
         pluginClass: VideoThumbnailPlugin
