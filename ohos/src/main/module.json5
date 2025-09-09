@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "video_thumbnail",
+    "name": "get_thumbnail_video",
     "type": "har",
     "deviceTypes": [
       "default",

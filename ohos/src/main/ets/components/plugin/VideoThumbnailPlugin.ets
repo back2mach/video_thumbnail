@@ -43,7 +43,7 @@ export default class VideoThumbnailPlugin implements FlutterPlugin, MethodCallHa
   }
 
   onAttachedToEngine(binding: FlutterPluginBinding): void {
-    this.channel = new MethodChannel(binding.getBinaryMessenger(), "plugins.justsoft.xyz/video_thumbnail");
+    this.channel = new MethodChannel(binding.getBinaryMessenger(), "video_thumbnail");
     this.channel.setMethodCallHandler(this)
   }
 
