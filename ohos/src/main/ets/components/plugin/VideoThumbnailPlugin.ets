@@ -31,6 +31,7 @@ import HashMap from '@ohos.util.HashMap';
 import media from '@ohos.multimedia.media'
 import image from '@ohos.multimedia.image'
 import fs from "@ohos.file.fs"
+
 /** VideoThumbnailPlugin **/
 export default class VideoThumbnailPlugin implements FlutterPlugin, MethodCallHandler {
   private channel: MethodChannel | null = null;
@@ -75,12 +76,13 @@ export default class VideoThumbnailPlugin implements FlutterPlugin, MethodCallHa
         handled = true;
       }
     } catch (e) {
-      exc = e.message.toString() ;
+      exc = e.message.toString();
     }
     this.onResult(result, thumbnail, handled, exc, method);
   }
+
   onResult(result: MethodResult, thumbnail: null, handled: boolean, exc: string, method: string) {
-    if (exc != "" ) {
+    if (exc != "") {
       result.error("", exc, "");
     }
     if (method == "file") {
@@ -98,15 +100,35 @@ function setDataThumbnail(thumbnail: ESObject): Uint8Array {
 
 async function createVideoThumbnail(video: string, headers: HashMap<string, string>, maxh: number, maxw: number,
   timeMs: number): Promise<image.PixelMap> {
-  let param: media.PixelMapParams = {
-    width: maxw,
-    height: maxh
-  }
-  let avImageGenerator: media.AVImageGenerator = await media.createAVImageGenerator();
   let file = fs.openSync(video, fs.OpenMode.READ_ONLY);
   let avFileDescriptor: media.AVFileDescriptor = { fd: file.fd };
+
+  let width = maxw;
+  let height = maxh;
+
+  /// try to scale another axis(if possible) based on aspect ratio
+  if (width == 0 || height == 0) {
+    let avMetadataExtractor: media.AVMetadataExtractor = await media.createAVMetadataExtractor();
+    avMetadataExtractor.fdSrc = avFileDescriptor;
+    let metadata: media.AVMetadata | undefined = await avMetadataExtractor.fetchMetadata();
+    let videoWidth = Number(metadata.videoWidth);
+    let videoHeight = Number(metadata.videoHeight);
+    if (videoWidth && videoHeight) {
+      if (width == 0 && height > 0) {
+        width = Math.round(height / videoHeight * videoWidth);
+      } else if (width > 0 && height == 0) {
+        height = Math.round(width / videoWidth * videoHeight);
+      }
+    }
+  }
+
+  let param: media.PixelMapParams = {
+    width: width,
+    height: height
+  }
+  let avImageGenerator: media.AVImageGenerator = await media.createAVImageGenerator();
   avImageGenerator.fdSrc = avFileDescriptor;
-  let queryOption = media.AVImageQueryOptions.AV_IMAGE_QUERY_NEXT_SYNC
+  let queryOption = media.AVImageQueryOptions.AV_IMAGE_QUERY_CLOSEST
   let pixel_map: image.PixelMap | undefined =
     await avImageGenerator.fetchFrameByTime(timeMs * 1000, queryOption, param);
   avImageGenerator.release();

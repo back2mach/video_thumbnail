@@ -1,5 +1,5 @@
 {
-  "name": "video_thumbnail",
+  "name": "get_thumbnail_video",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "index.ets",
